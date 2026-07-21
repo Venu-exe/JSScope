@@ -1,8 +1,22 @@
-# JSScope
+<div align="center">
+  <h1>🔍 JSScope</h1>
+  <p><b>JavaScript endpoint, GraphQL, and secret extractor for bug bounty recon.</b></p>
+  
+  <p>
+    <a href="https://github.com/Venu-exe/JSScope/stargazers"><img src="https://img.shields.io/github/stars/Venu-exe/JSScope?style=for-the-badge&color=yellow" alt="Stars"></a>
+    <a href="https://github.com/Venu-exe/JSScope/network/members"><img src="https://img.shields.io/github/forks/Venu-exe/JSScope?style=for-the-badge&color=blue" alt="Forks"></a>
+    <a href="https://github.com/Venu-exe/JSScope/issues"><img src="https://img.shields.io/github/issues/Venu-exe/JSScope?style=for-the-badge&color=green" alt="Issues"></a>
+    <a href="https://github.com/Venu-exe/JSScope/blob/master/LICENSE"><img src="https://img.shields.io/github/license/Venu-exe/JSScope?style=for-the-badge&color=red" alt="License"></a>
+  </p>
 
-JavaScript endpoint, GraphQL, and secret extractor for bug bounty recon.
+  <p>
+    <b>⭐️ If you find this tool useful, please leave a star and share your feedback! ⭐️</b>
+  </p>
+</div>
 
-Point it at a `.js` file, a page (with `--crawl` to auto-discover linked scripts),
+---
+
+Point JSScope at a `.js` file, a page (with `--crawl` to auto-discover linked scripts),
 or a list of URLs, and it will pull out:
 
 - **Endpoints / routes** — `/api/v1/users/{id}`, `/admin/config.json`, etc.
@@ -12,7 +26,10 @@ or a list of URLs, and it will pull out:
 
 Fetching is multi-threaded so scanning a list of JS files is fast.
 
-## Disclaimer
+## 🤝 Feedback & Reviews
+Your feedback is incredibly valuable! After you've used JSScope in your recon process, please [leave a review or feature request in the Issues tab](https://github.com/Venu-exe/JSScope/issues/new/choose). 
+
+## ⚠️ Disclaimer
 
 Only use this against targets you are authorized to test — programs you're
 enrolled in on a bug bounty platform, or assets you own. Scanning systems
