@@ -49,7 +49,9 @@ pipx install .
 jsscope --help
 ```
 
-## Quick start
+## Usage
+
+### The basics
 
 Scan a single JS file:
 
@@ -85,6 +87,161 @@ Filter noise and only keep API routes:
 
 ```bash
 python3 jsscope.py -u https://target.com/main.js --filter '/api/' --exclude '\.(svg|png)$'
+```
+
+### Authenticated scans
+
+Send cookies and bearer tokens with repeatable `-H` flags:
+
+```bash
+python3 jsscope.py -u https://app.target.com --crawl --depth 2 \
+  -H 'Cookie: session=abc123; csrf=xyz' \
+  -H 'Authorization: Bearer eyJhbGciOi...'
+```
+
+Authenticated scans usually surface the interesting stuff — private API
+routes often only appear in the JS served to logged-in users.
+
+### Route traffic through Burp or Caido
+
+```bash
+python3 jsscope.py -u https://target.com --crawl --depth 2 \
+  --proxy http://127.0.0.1:8080
+```
+
+TLS verification is off by default, so Burp's MITM certificate works without
+extra setup. Use `--verify` when you want strict certificate checks.
+
+### Follow lazy-loaded chunks
+
+Modern SPAs split routes into dynamically imported chunks. Raise `--depth` to
+walk the import graph:
+
+```bash
+# main.js -> ./chunks/*.js -> further nested imports
+python3 jsscope.py -u https://target.com/static/main.js --depth 3
+```
+
+Imports that point to another origin are skipped, so you stay on the target.
+
+### Be gentle on rate-limited targets
+
+```bash
+python3 jsscope.py -l urls.txt -t 3 --delay 0.5 --timeout 20
+```
+
+`--delay` sleeps between every request; `-t` caps concurrent workers.
+
+### Recon pipelines
+
+Feed URLs from subdomain and crawl tooling straight into JSScope:
+
+```bash
+# subfinder -> httpx -> katana -> JSScope
+subfinder -d target.com -silent \
+  | httpx -silent -mc 200 \
+  | katana -silent -jc -d 2 \
+  | grep -Ei '\.js(\?|$)' \
+  | python3 jsscope.py -l - -o crawl.json --no-banner
+```
+
+Or harvest archived JS files with `gau` / `waybackurls`:
+
+```bash
+gau target.com | grep -Ei '\.js(\?|$)' \
+  | python3 jsscope.py -l - -o archive.json --no-banner
+```
+
+Any tool that prints one URL per line works with `-l -`.
+
+### High-signal endpoint hunting
+
+Only keep admin, internal, debug, versioned API, and GraphQL routes:
+
+```bash
+python3 jsscope.py -l urls.txt -o results.json \
+  --filter '/(admin|internal|private|debug|actuator|graphql|api/v[0-9]+)/' \
+  --exclude '^/(static|assets|images)/'
+```
+
+Pull just the unique paths afterwards:
+
+```bash
+jq -r '.[].endpoints[]' results.json | sort -u
+```
+
+### GraphQL surface discovery
+
+Collect every GraphQL hint (paths, operations, `gql` tags) across a target:
+
+```bash
+python3 jsscope.py -u https://app.target.com --crawl --depth 2 \
+  --filter 'graphql|query|mutation|subscription' --no-secrets
+```
+
+### Recover original source from source maps
+
+JSScope resolves `sourceMappingURL` references to absolute URLs. Download them
+in bulk:
+
+```bash
+jq -r '.[].sourcemaps[]' results.json | sort -u > maps.txt
+while read -r map; do
+  curl -sSL "$map" -o "$(basename "${map%%\?*}")"
+done < maps.txt
+```
+
+Then unpack a map with
+[unwebpack-sourcemap](https://github.com/rarecoil/unwebpack-sourcemap) to get
+readable source files:
+
+```bash
+unwebpack-sourcemap.py -o recovered ./main.js.map
+```
+
+### Secret triage
+
+List findings as TSV with the file they came from, then verify manually:
+
+```bash
+jq -r '.[] | .source as $s | .secrets[] | [.type, .match, $s] | @tsv' results.json
+```
+
+Found something you want to share? Add `--redact` so values are masked in the
+console:
+
+```bash
+python3 jsscope.py -u https://target.com/main.js --redact
+```
+
+Use `--no-secrets` when you only care about endpoints and GraphQL.
+
+### Track changes between runs
+
+Save a baseline, rescan later, and diff the endpoint sets:
+
+```bash
+# baseline run
+python3 jsscope.py -u https://target.com --crawl --depth 2 -o baseline.json --no-banner
+jq -r '.[].endpoints[]' baseline.json | sort -u > baseline.txt
+
+# later, after the target ships a new build
+python3 jsscope.py -u https://target.com --crawl --depth 2 -o today.json --no-banner
+jq -r '.[].endpoints[]' today.json | sort -u > today.txt
+
+comm -13 baseline.txt today.txt   # endpoints that appeared
+```
+
+### Use it as a library
+
+The extraction logic is importable if you already have the JS in memory:
+
+```python
+from jsscope import extract
+
+findings = extract(open("bundle.js", encoding="utf-8").read(), "bundle.js")
+print(findings["endpoints"])
+print(findings["secrets"])
 ```
 
 ## Options
