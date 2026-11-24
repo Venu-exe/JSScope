@@ -28,6 +28,10 @@ list of URLs. It pulls out:
 Scans run in parallel, and `--depth` follows relative `import` / `require` /
 `importScripts` chains so lazy-loaded bundles don't get missed.
 
+<p align="center">
+  <img src="docs/demo.png" alt="JSScope terminal output showing discovered endpoints, GraphQL operations, redacted secrets and source map references" width="900">
+</p>
+
 ## Install
 
 Requires Python 3.9+.
