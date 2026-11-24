@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jsscope"
+version = "2.0.0"
+description = "JavaScript endpoint, GraphQL and secret extractor for bug bounty recon"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "venu-exe" }]
+keywords = ["bug-bounty", "recon", "javascript", "graphql", "secrets", "security"]
+dependencies = [
+    "requests>=2.31.0",
+    "pyfiglet>=1.0.2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4"]
+
+[project.scripts]
+jsscope = "jsscope:main"
+
+[project.urls]
+Homepage = "https://github.com/Venu-exe/JSScope"
+Repository = "https://github.com/Venu-exe/JSScope"
+Issues = "https://github.com/Venu-exe/JSScope/issues"
+
+[tool.setuptools]
+py-modules = ["jsscope"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
