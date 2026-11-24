@@ -6,6 +6,7 @@
     <a href="https://github.com/Venu-exe/JSScope/stargazers"><img src="https://img.shields.io/github/stars/Venu-exe/JSScope?style=for-the-badge&color=yellow" alt="Stars"></a>
     <a href="https://github.com/Venu-exe/JSScope/network/members"><img src="https://img.shields.io/github/forks/Venu-exe/JSScope?style=for-the-badge&color=blue" alt="Forks"></a>
     <a href="https://github.com/Venu-exe/JSScope/actions/workflows/tests.yml"><img src="https://img.shields.io/github/actions/workflow/status/Venu-exe/JSScope/tests.yml?style=for-the-badge&label=tests" alt="Tests"></a>
+    <a href="https://github.com/Venu-exe/JSScope/releases"><img src="https://img.shields.io/github/v/release/Venu-exe/JSScope?style=for-the-badge&color=purple" alt="Release"></a>
     <a href="https://github.com/Venu-exe/JSScope/blob/master/LICENSE"><img src="https://img.shields.io/github/license/Venu-exe/JSScope?style=for-the-badge&color=red" alt="License"></a>
   </p>
 
@@ -34,7 +35,36 @@ Scans run in parallel, and `--depth` follows relative `import` / `require` /
 
 ## Install
 
-Requires Python 3.9+.
+Requires Python 3.9+. Pick whichever install method fits your workflow.
+
+### From a release wheel (recommended)
+
+```bash
+gh release download --repo Venu-exe/JSScope --pattern '*.whl'
+pip install ./jsscope-*.whl
+jsscope --version
+```
+
+Or download the `.whl` / `.tar.gz` directly from the
+[Releases page](https://github.com/Venu-exe/JSScope/releases).
+
+### With Docker
+
+The container is published to GHCR on every release:
+
+```bash
+docker run --rm ghcr.io/venu-exe/jsscope --help
+docker run --rm ghcr.io/venu-exe/jsscope -u https://target.com/main.js
+```
+
+Mount your working directory to scan local files or keep JSON output:
+
+```bash
+docker run --rm -v "$PWD:/work" ghcr.io/venu-exe/jsscope \
+  -f /work/bundle.js -o /work/results.json
+```
+
+### From source
 
 ```bash
 git clone https://github.com/Venu-exe/JSScope.git
@@ -42,11 +72,21 @@ cd JSScope
 pip install -r requirements.txt
 ```
 
-Or install it as a command with [pipx](https://pipx.pypa.io/):
+Install it as a command with [pipx](https://pipx.pypa.io/):
 
 ```bash
 pipx install .
 jsscope --help
+```
+
+### From PyPI
+
+PyPI publishing is wired up with Trusted Publishing but stays disabled until
+the maintainer configures the `pypi` environment and `PUBLISH_TO_PYPI`
+variable ([details](docs/RELEASING.md)). Once enabled:
+
+```bash
+pip install jsscope
 ```
 
 ## Usage
@@ -325,6 +365,11 @@ pytest -q
 Tests cover endpoint/URL/GraphQL extraction, secret handling, source maps,
 import discovery, HTML crawling, filters, and redaction. CI runs them on every
 push against Python 3.9, 3.11, and 3.13.
+
+Releases are automated: pushing a `v*` tag builds the wheel and sdist, attaches
+them to a GitHub Release, publishes the container image to GHCR, and (when
+enabled) uploads to PyPI. See [docs/RELEASING.md](docs/RELEASING.md) for the
+full checklist.
 
 ## Contributing
 
